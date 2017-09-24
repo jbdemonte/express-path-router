@@ -1,6 +1,6 @@
 {
   "name": "express-path-router",
-  "version": "0.0.2",
+  "version": "0.0.3",
   "description": "A router for Express.js based on the filesystem",
   "main": "index.js",
   "author": "Jean-Baptiste Demonte <jbdemonte@gmail.com>",

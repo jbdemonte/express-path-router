@@ -49,16 +49,22 @@ function compare(dir1, dir2) {
 }
 
 exports.load = function (config, callback) {
-  var ujsRe = /^((.*)\/)?_\.js$/;
+  var verbs = /^((.*)\/)?(_|get|delete|patch|put|post)\.js$/;
+  var ujs = /^((.*)\/)?_\.js$/;
+
   var path = config.path + '/';
   var promise = getFiles(path + '**/*.js').then(function (files) {
     var prefix = config.prefix ? config.prefix.replace(/^\/+/, '').replace(/\/+$/, '') : '';
     var params = [];
 
+    files = files.filter(function (file) {
+      return file.match(verbs);
+    });
+
     // handle all _.js files
     files.forEach(function (file) {
       var module;
-      var match = file.replace(path, '').match(ujsRe);
+      var match = file.replace(path, '').match(ujs);
       if (match) {
         module = require(file);
         params.push({
@@ -82,7 +88,7 @@ exports.load = function (config, callback) {
     files
       .filter(function (file) {
         // ignore _.js files
-        return !file.match(ujsRe);
+        return !file.match(ujs);
       })
       .forEach(function (file) {
 
