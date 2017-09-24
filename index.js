@@ -49,9 +49,10 @@ function compare(dir1, dir2) {
 }
 
 exports.load = function (config, callback) {
-  var ujsRe = /^(.*)\/_\.js$/;
+  var ujsRe = /^((.*)\/)?_\.js$/;
   var path = config.path + '/';
-  var promise = getFiles(path + '*/**/*.js').then(function (files) {
+  var promise = getFiles(path + '**/*.js').then(function (files) {
+    var prefix = config.prefix ? config.prefix.replace(/^\/+/, '').replace(/\/+$/, '') : '';
     var params = [];
 
     // handle all _.js files
@@ -61,7 +62,7 @@ exports.load = function (config, callback) {
       if (match) {
         module = require(file);
         params.push({
-          path: match[1],
+          path: match[2] || '',
           module: module
         });
       }
@@ -87,63 +88,72 @@ exports.load = function (config, callback) {
 
         var method;
         var args = [];
+        var modules = [];
         var middlewares = [];
         var module = require(file);
         var apiPath = file.replace(path, '');
         var splitPath = apiPath.split('/');
 
-        if (config.prefix) {
-          splitPath.unshift(config.prefix);
-        }
-
         params.forEach(function (item) {
-          if (apiPath.indexOf(item.path) === 0) {
+          if (!item.path || apiPath.indexOf(item.path) === 0) {
             if (item.module.pattern) {
-              splitPath[item.path.split('/').length] = item.module.pattern;
+              splitPath[item.path.split('/').length - 1] = item.module.pattern;
             }
             if (item.module.middlewares) {
               // use concat instead of push to allows array of array in middlewares
               middlewares = Array.prototype.concat.apply(middlewares, item.module.middlewares);
             }
+            modules.push(item.module);
           }
         });
 
-      // extract method (get, put, delete...)
-      method = splitPath.pop().replace('.js', '');
+        if (module.pattern) {
+          splitPath[splitPath.length - 2] = module.pattern;
+        }
 
-      // create args array to bind the express method with
+        modules.push(module);
 
-      // 1) path
-      // ---------------
-      args.push('/' + splitPath.join('/'));
+        // extract method (get, put, delete...)
+        method = splitPath.pop().replace('.js', '');
 
-      // 2) middlewares
-      // ---------------
+        // create args array to bind the express method with
+
+        // 1) path
+        // ---------------
+
+        if (prefix) {
+          splitPath.unshift(prefix);
+        }
+
+        args.push('/' + splitPath.join('/'));
+
+        // 2) middlewares
+        // ---------------
         if (module.middlewares) {
           // use concat instead of push to allows array of array in middlewares
           middlewares = Array.prototype.concat.apply(middlewares, module.middlewares);
         }
 
-      if (config.hook) {
-        config.hook({
-          method: method,
-          route: splitPath.join('/'),
-          module: module,
-          file: file,
-          middlewares: middlewares
-        });
-      }
+        if (config.hook) {
+          middlewares = config.hook(middlewares, {
+            method: method,
+            route: splitPath.join('/'),
+            modules: modules,
+            module: module,
+            file: file
+          }) || middlewares;
+        }
 
-      if (middlewares.length) {
-        Array.prototype.push.apply(args, middlewares);
-      }
+        if (middlewares.length) {
+          Array.prototype.push.apply(args, middlewares);
+        }
 
-      // callback
-      // ---------------
-      args.push(module.callback);
+        // 3) callback
+        // ---------------
+        args.push(module.callback);
 
-      config.app[method].apply(config.app, args);
-    });
+        config.app[method].apply(config.app, args);
+      });
   });
 
   if (callback) {
