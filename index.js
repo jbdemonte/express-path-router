@@ -48,6 +48,29 @@ function compare(dir1, dir2) {
   return dir1 < dir2 ? -1 : 1;
 }
 
+/**
+ * Load and standardize a module
+ * @param {string} file
+ * @param {boolean=false} [cb]
+ * @return {object}
+ */
+function loadModule(file, cb) {
+  var module = require(file);
+  if (Array.isArray(module)) {
+    module = {
+      middlewares: module
+    };
+  } else if (typeof module === 'function') {
+    module = {
+      middlewares: [module]
+    };
+  }
+  if (cb && !module.callback) {
+    module.callback = module.middlewares.pop();
+  }
+  return module;
+}
+
 exports.load = function (config, callback) {
   var verbs = /^((.*)\/)?(_|get|delete|patch|put|post)\.js$/;
   var ujs = /^((.*)\/)?_\.js$/;
@@ -66,7 +89,7 @@ exports.load = function (config, callback) {
       var module;
       var match = file.replace(path, '').match(ujs);
       if (match) {
-        module = require(file);
+        module = loadModule(file);
         params.push({
           path: match[2] || '',
           module: module
@@ -96,7 +119,7 @@ exports.load = function (config, callback) {
         var args = [];
         var modules = [];
         var middlewares = [];
-        var module = require(file);
+        var module = loadModule(file, true);
         var apiPath = file.replace(path, '');
         var splitPath = apiPath.split('/');
 
