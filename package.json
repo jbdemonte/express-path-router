@@ -1,6 +1,6 @@
 {
   "name": "express-path-router",
-  "version": "0.0.4",
+  "version": "1.0.0",
   "description": "A router for Express.js based on the filesystem",
   "main": "index.js",
   "author": "Jean-Baptiste Demonte <jbdemonte@gmail.com>",
@@ -17,5 +17,9 @@
     "coveralls": "^2.13.1",
     "mocha": "^3.5.3",
     "nyc": "^11.2.1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git@github.com:jbdemonte/express-path-router.git"
   }
 }
