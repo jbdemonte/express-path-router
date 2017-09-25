@@ -143,11 +143,14 @@ exports.load = function (config, callback) {
         if (config.hook) {
           middlewares = config.hook(middlewares, {
             method: method,
-            route: splitPath.join('/'),
+            route: '/' + splitPath.join('/'),
             modules: modules,
             module: module,
             file: file
           }) || middlewares;
+          if (!Array.isArray(middlewares)) {
+            throw new Error('array expected');
+          }
         }
 
         if (middlewares.length) {

@@ -3,7 +3,6 @@ var router = require('../../index');
 var expect = require('chai').expect;
 
 it('should load the API', function () {
-
   return router
     .load({
       app: app,
@@ -23,7 +22,5 @@ it('should load the API', function () {
       expect(app.results('get:/users/:id')).to.eql(['USER-GET-ID-1', 'USER-GET-ID-2', 'USER-GET-ID-3']);
       expect(app.results('post:/users/:id')).to.eql(['USER-POST-ID-1', 'USER-POST-ID-2', 'USER-POST-ID-3']);
       expect(app.results('get:/products/:id')).to.eql(['PRODUCT-GET-ID-1', 'PRODUCT-GET-ID-2', 'PRODUCT-GET-ID-3']);
-
     });
-
 });

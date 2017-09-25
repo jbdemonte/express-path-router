@@ -18,9 +18,7 @@ it('should prefix the API', function () {
         'post:/path1/path2/users/:id',
         'get:/path1/path2/products/:id'
       ]);
-
     });
-
 });
 
 it('should prefix the API without ignoring starting or ending /', function () {
@@ -39,7 +37,5 @@ it('should prefix the API without ignoring starting or ending /', function () {
         'post:/path1/path2/users/:id',
         'get:/path1/path2/products/:id'
       ]);
-
     });
-
 });
